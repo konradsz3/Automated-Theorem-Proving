@@ -57,3 +57,50 @@ instance Show Statement where
 
 indent :: String -> String
 indent = unlines . map ("  " ++) . lines
+
+lexer :: Token.TokenParser ()
+lexer = Token.makeTokenParser style
+  where
+    style = emptyDef
+      { Token.commentLine = "//"
+      , Token.reservedNames =
+          [ "AXIOM", "THEOREM", "GIVEN", "ASSERT", "APPLY"
+          , "BY CONTRADICTION", "QED"
+          ]
+      , Token.reservedOpNames =
+          [ "∧", "∨", "→", "¬"
+          ]
+      }
+
+identifier :: Parser String
+identifier = Token.identifier lexer
+
+reserved :: String -> Parser ()
+reserved = Token.reserved lexer
+
+reservedOp :: String -> Parser ()
+reservedOp = Token.reservedOp lexer
+
+integer :: Parser Int
+integer = fromIntegral <$> Token.integer lexer
+
+stringLiteral :: Parser String
+stringLiteral = Token.stringLiteral lexer
+
+parens :: Parser a -> Parser a
+parens = Token.parens lexer
+
+braces :: Parser a -> Parser a
+braces = Token.braces lexer
+
+brackets :: Parser a -> Parser a
+brackets = Token.brackets lexer
+
+semi :: Parser String
+semi = Token.semi lexer
+
+whiteSpace :: Parser ()
+whiteSpace = Token.whiteSpace lexer
+
+commaSep :: Parser a -> Parser [a]
+commaSep = Token.commaSep lexer
