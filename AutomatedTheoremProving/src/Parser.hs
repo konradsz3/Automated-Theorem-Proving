@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -w #-}
 {-# LANGUAGE InstanceSigs #-}
 module Parser where
 
@@ -10,6 +11,7 @@ import qualified Text.Parsec.Token as Token
 import Control.Monad (void)
 import Data.Functor.Identity (Identity)
 import System.IO (hSetEncoding, stdin, stdout, utf8)
+import GHC.IO.Encoding (setLocaleEncoding, utf8)
 
 -- Abstract Syntax Tree definitions
 -- Program representation
@@ -135,6 +137,15 @@ formula = buildExpressionParser operators term
       , [Infix  (reservedOp "\x2194" >> return Equivalent) AssocRight]
       ]
 
+example :: String
+example = "\x00AC A ∨ (B ∧ C) → D ↔ E"
+
+testParse :: String -> IO ()
+testParse input = case parse (formula <* eof) "" input of
+  Left err  -> print err
+  Right ast -> print ast
+
+  
 -- main :: IO ()
 -- main = do
 --   hSetEncoding stdout utf8
@@ -146,115 +157,115 @@ formula = buildExpressionParser operators term
 --     Right f  -> print f
 
 -- Statement parsers
-statement :: Parser Statement
-statement = choice 
-    [ thinkStmt
-    , eatStmt
-    , printStmt
-    , declareResourceStmt
-    , loopStmt
-    , spawnStmt
-    , lockAllStmt
-    , unlockAllStmt
-    , letStmt
-    , foreachStmt
-    , ifStmt
-    ] <* optional semi
+-- statement :: Parser Statement
+-- statement = choice 
+--     [ thinkStmt
+--     , eatStmt
+--     , printStmt
+--     , declareResourceStmt
+--     , loopStmt
+--     , spawnStmt
+--     , lockAllStmt
+--     , unlockAllStmt
+--     , letStmt
+--     , foreachStmt
+--     , ifStmt
+--     ] <* optional semi
 
-thinkStmt :: Parser Statement
-thinkStmt = do
-    reserved "think"
-    Think <$> expr
+-- thinkStmt :: Parser Statement
+-- thinkStmt = do
+--     reserved "think"
+--     Think <$> expr
 
-eatStmt :: Parser Statement
-eatStmt = do
-    reserved "eat"
-    duration <- expr
-    reserved "resource"
-    resource1Name <- identifier
-    reserved "resource"
-    resource2Name <- identifier
-    return $ Eat duration (Resource resource1Name) (Resource resource2Name)
+-- eatStmt :: Parser Statement
+-- eatStmt = do
+--     reserved "eat"
+--     duration <- expr
+--     reserved "resource"
+--     resource1Name <- identifier
+--     reserved "resource"
+--     resource2Name <- identifier
+--     return $ Eat duration (Resource resource1Name) (Resource resource2Name)
 
-printStmt :: Parser Statement
-printStmt = do
-    reserved "print"
-    -- Now we can parse any expression and handle string conversion during evaluation
-    PrintExpr <$> expr
+-- printStmt :: Parser Statement
+-- printStmt = do
+--     reserved "print"
+--     -- Now we can parse any expression and handle string conversion during evaluation
+--     PrintExpr <$> expr
 
-declareResourceStmt :: Parser Statement
-declareResourceStmt = do
-    reserved "declareResource"
-    DeclareResource <$> expr 
+-- declareResourceStmt :: Parser Statement
+-- declareResourceStmt = do
+--     reserved "declareResource"
+--     DeclareResource <$> expr 
 
-loopStmt :: Parser Statement
-loopStmt = do
-    reserved "loop"
-    Loop <$> braces (many statement)
+-- loopStmt :: Parser Statement
+-- loopStmt = do
+--     reserved "loop"
+--     Loop <$> braces (many statement)
 
-spawnStmt :: Parser Statement
-spawnStmt = do
-    reserved "spawn"
-    processName <- expr
-    body <- braces (many statement)
-    return $ Spawn processName body
+-- spawnStmt :: Parser Statement
+-- spawnStmt = do
+--     reserved "spawn"
+--     processName <- expr
+--     body <- braces (many statement)
+--     return $ Spawn processName body
 
-lockAllStmt :: Parser Statement
-lockAllStmt = do
-    reserved "lockAll"
-    resources <- brackets (commaSep exprNoSpace)
-    variables <- brackets (commaSep identifier)
-    return $ LockAll resources variables
-  where
-    -- Define operators locally for this parser
-    exprNoSpace = buildExpressionParser operatorsNoSpace termNoSpace
-    -- Define the operators table for exprNoSpace
-    operatorsNoSpace = 
-      [ [Infix (reservedOp "++" >> return Concat) AssocLeft]
-      , [Infix (reservedOp "+" >> return Add) AssocLeft,
-         Infix (reservedOp "-" >> return Sub) AssocLeft]
-      , [Infix (reservedOp "%" >> return Mod) AssocLeft]
-      ]
-    termNoSpace = parens expr
-               <|> Var <$> identifier
-               <|> StringLit <$> stringLiteral
-               <|> IntLit <$> integer
-               <|> randExpr
+-- lockAllStmt :: Parser Statement
+-- lockAllStmt = do
+--     reserved "lockAll"
+--     resources <- brackets (commaSep exprNoSpace)
+--     variables <- brackets (commaSep identifier)
+--     return $ LockAll resources variables
+--   where
+--     -- Define operators locally for this parser
+--     exprNoSpace = buildExpressionParser operatorsNoSpace termNoSpace
+--     -- Define the operators table for exprNoSpace
+--     operatorsNoSpace = 
+--       [ [Infix (reservedOp "++" >> return Concat) AssocLeft]
+--       , [Infix (reservedOp "+" >> return Add) AssocLeft,
+--          Infix (reservedOp "-" >> return Sub) AssocLeft]
+--       , [Infix (reservedOp "%" >> return Mod) AssocLeft]
+--       ]
+--     termNoSpace = parens expr
+--                <|> Var <$> identifier
+--                <|> StringLit <$> stringLiteral
+--                <|> IntLit <$> integer
+--                <|> randExpr
 
-unlockAllStmt :: Parser Statement
-unlockAllStmt = do
-    reserved "unlockAll"
-    resources <- brackets $ commaSep resourceReference
-    return $ UnlockAll resources
-  where
-    resourceReference = try (do
-        reserved "resource"
-        Resource <$> identifier)
-      <|> (Resource <$> identifier)
+-- unlockAllStmt :: Parser Statement
+-- unlockAllStmt = do
+--     reserved "unlockAll"
+--     resources <- brackets $ commaSep resourceReference
+--     return $ UnlockAll resources
+--   where
+--     resourceReference = try (do
+--         reserved "resource"
+--         Resource <$> identifier)
+--       <|> (Resource <$> identifier)
 
-letStmt :: Parser Statement
-letStmt = do
-    reserved "let"
-    name <- identifier
-    reservedOp "="
-    value <- expr
-    return $ Let name value
+-- letStmt :: Parser Statement
+-- letStmt = do
+--     reserved "let"
+--     name <- identifier
+--     reservedOp "="
+--     value <- expr
+--     return $ Let name value
 
-foreachStmt :: Parser Statement
-foreachStmt = do
-    reserved "foreach"
-    startVal <- integer
-    reserved "to"
-    endVal <- integer
-    reserved "as"
-    indexVar <- identifier
-    body <- braces (many statement)
-    return $ ForEach startVal endVal indexVar body
+-- foreachStmt :: Parser Statement
+-- foreachStmt = do
+--     reserved "foreach"
+--     startVal <- integer
+--     reserved "to"
+--     endVal <- integer
+--     reserved "as"
+--     indexVar <- identifier
+--     body <- braces (many statement)
+--     return $ ForEach startVal endVal indexVar body
 
-ifStmt :: Parser Statement
-ifStmt = do
-    reserved "if"
-    condition <- expr
-    thenBlock <- braces (many statement)
-    elseBlock <- option [] (reserved "else" >> braces (many statement))
-    return $ If condition thenBlock elseBlock
+-- ifStmt :: Parser Statement
+-- ifStmt = do
+--     reserved "if"
+--     condition <- expr
+--     thenBlock <- braces (many statement)
+--     elseBlock <- option [] (reserved "else" >> braces (many statement))
+--     return $ If condition thenBlock elseBlock
