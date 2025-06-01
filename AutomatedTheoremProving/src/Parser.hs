@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 module Parser where
 
 import Text.Parsec
@@ -22,7 +23,7 @@ data Formula
   | Or Formula Formula             -- Logical OR
   | Not Formula                    -- Logical NOT
   | Implies Formula Formula        -- Implication
-  deriving (Show, Eq)
+  deriving Eq
 
 -- Statements in the proof language
 data Statement
@@ -34,3 +35,13 @@ data Statement
   | ByContradiction [Statement]    -- Proof by contradiction
   | Qed                            -- End of proof
   deriving (Show, Eq)
+
+instance Show Formula where
+  show :: Formula -> String
+  show (Var v) = v
+  show (Const True) = "True"
+  show (Const False) = "False"
+  show (And f1 f2) = "(" ++ show f1 ++ " ∧ " ++ show f2 ++ ")"
+  show (Or f1 f2) = "(" ++ show f1 ++ " ∨ " ++ show f2 ++ ")"
+  show (Not f) = "¬" ++ show f
+  show (Implies f1 f2) = "(" ++ show f1 ++ " → " ++ show f2 ++ ")"
