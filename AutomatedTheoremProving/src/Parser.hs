@@ -145,7 +145,7 @@ testParse input = case parse (formula <* eof) "" input of
   Left err  -> print err
   Right ast -> print ast
 
-  
+
 -- main :: IO ()
 -- main = do
 --   hSetEncoding stdout utf8
@@ -156,21 +156,31 @@ testParse input = case parse (formula <* eof) "" input of
 --     Left err -> print err
 --     Right f  -> print f
 
--- Statement parsers
--- statement :: Parser Statement
--- statement = choice 
---     [ thinkStmt
---     , eatStmt
---     , printStmt
---     , declareResourceStmt
---     , loopStmt
---     , spawnStmt
---     , lockAllStmt
---     , unlockAllStmt
---     , letStmt
---     , foreachStmt
---     , ifStmt
---     ] <* optional semi
+statement :: Parser Statement
+statement = choice
+    [ axiomStmt
+    -- , theoremStmt
+    -- , givenStmt
+    -- , assertStmt
+    -- , applyStmt
+    -- , byContradictionStmt
+    -- , qedStmt
+    ] <* optional semi
+
+testParseStat :: String -> IO ()
+testParseStat input = case parse (statement <* eof) "" input of
+    Left err -> print err
+    Right stmt -> print stmt
+
+axiomStmt :: Parser Statement
+axiomStmt = do
+    reserved "AXIOM"
+    name <- identifier
+    reservedOp ":"
+    Axiom name <$> formula
+
+exampleA :: String
+exampleA = "AXIOM MyAxiom : (A ∧ B → C);"
 
 -- thinkStmt :: Parser Statement
 -- thinkStmt = do
