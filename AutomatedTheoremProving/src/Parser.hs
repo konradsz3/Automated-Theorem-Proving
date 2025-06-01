@@ -34,7 +34,7 @@ data Statement
   | Apply String [Formula]         -- Apply a rule or theorem
   | ByContradiction [Statement]    -- Proof by contradiction
   | Qed                            -- End of proof
-  deriving (Show, Eq)
+  deriving Eq
 
 instance Show Formula where
   show :: Formula -> String
@@ -45,3 +45,15 @@ instance Show Formula where
   show (Or f1 f2) = "(" ++ show f1 ++ " ∨ " ++ show f2 ++ ")"
   show (Not f) = "¬" ++ show f
   show (Implies f1 f2) = "(" ++ show f1 ++ " → " ++ show f2 ++ ")"
+
+instance Show Statement where
+  show (Axiom s f) = "AXIOM " ++ show s ++ ": " ++ show f ++ ";"
+  show (Theorem s f) = "THEOREM " ++ show s ++ ": " ++ show f ++ ";"
+  show (Given f) = "GIVEN " ++ show f ++ ";"
+  show (Assert f) = "ASSERT " ++ show f ++ ";"
+  show (Apply s fl) = "APPLY " ++ show s ++ indent (unlines (map show fl)) ++ ";"
+  show (ByContradiction sl) = "BY CONTRADICTION " ++ indent (unlines (map show sl)) ++ ";"
+  show Qed = "QED;"
+
+indent :: String -> String
+indent = unlines . map ("  " ++) . lines
