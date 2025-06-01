@@ -9,12 +9,12 @@ import Text.Parsec.Language (emptyDef)
 import qualified Text.Parsec.Token as Token
 import Control.Monad (void)
 import Data.Functor.Identity (Identity)
-import Data.Functor.Contravariant (Equivalence)
+import System.IO (hSetEncoding, stdin, stdout, utf8)
 
 -- Abstract Syntax Tree definitions
 -- Program representation
 data Program = Program [Statement]
-  deriving (Show, Eq)
+  deriving  Eq
 
 -- Logical formulas (propositional logic only)
 data Formula
@@ -37,6 +37,9 @@ data Statement
   | ByContradiction [Statement]    -- Proof by contradiction
   | Qed                            -- End of proof
   deriving Eq
+
+instance Show Program where
+  show (Program forms) = unlines (map show forms)
 
 instance Show Formula where
   show :: Formula -> String
@@ -68,10 +71,10 @@ lexer = Token.makeTokenParser style
       { Token.commentLine = "//"
       , Token.reservedNames =
           [ "AXIOM", "THEOREM", "GIVEN", "ASSERT", "APPLY"
-          , "BY CONTRADICTION", "QED"
+          , "BY CONTRADICTION", "QED", "true", "false"
           ]
       , Token.reservedOpNames =
-          [ "∧", "∨", "→", "¬", "↔"
+          [ "∧", "∨", "→", "¬", "↔", "(", ")"
           ]
       }
 
@@ -83,12 +86,6 @@ reserved = Token.reserved lexer
 
 reservedOp :: String -> Parser ()
 reservedOp = Token.reservedOp lexer
-
-integer :: Parser Int
-integer = fromIntegral <$> Token.integer lexer
-
-stringLiteral :: Parser String
-stringLiteral = Token.stringLiteral lexer
 
 parens :: Parser a -> Parser a
 parens = Token.parens lexer
@@ -107,3 +104,38 @@ whiteSpace = Token.whiteSpace lexer
 
 commaSep :: Parser a -> Parser [a]
 commaSep = Token.commaSep lexer
+
+term :: Parser Formula
+term = parens formula
+    <|> constFormula
+    <|> varFormula
+
+constFormula :: Parser Formula
+constFormula = (reserved "true" >> return (Const True))
+            <|> (reserved "false" >> return (Const False))
+
+varFormula :: Parser Formula
+varFormula = Var <$> identifier
+
+
+
+formula :: Parser Formula
+formula = buildExpressionParser operators term
+  where
+    operators =
+      [ [Prefix (reservedOp "¬" >> return Not)]
+      , [Infix  (reservedOp "∧" >> return And) AssocLeft]
+      , [Infix  (reservedOp "∨" >> return Or) AssocLeft]
+      , [Infix  (reservedOp "→" >> return Implies) AssocRight]
+      , [Infix  (reservedOp "↔" >> return Equivalent) AssocRight]
+      ]
+
+main :: IO ()
+main = do
+  hSetEncoding stdout utf8
+  hSetEncoding stdin utf8
+  putStrLn "Wczytano:"
+  input <- readFile "input.txt"
+  case parse (whiteSpace >> formula <* eof) "" input of
+    Left err -> print err
+    Right f  -> print f
