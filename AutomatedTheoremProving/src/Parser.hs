@@ -9,6 +9,7 @@ import Text.Parsec.Language (emptyDef)
 import qualified Text.Parsec.Token as Token
 import Control.Monad (void)
 import Data.Functor.Identity (Identity)
+import Data.Functor.Contravariant (Equivalence)
 
 -- Abstract Syntax Tree definitions
 -- Program representation
@@ -23,6 +24,7 @@ data Formula
   | Or Formula Formula             -- Logical OR
   | Not Formula                    -- Logical NOT
   | Implies Formula Formula        -- Implication
+  | Equivalent Formula Formula     -- Equivalence
   deriving Eq
 
 -- Statements in the proof language
@@ -45,6 +47,7 @@ instance Show Formula where
   show (Or f1 f2) = "(" ++ show f1 ++ " ∨ " ++ show f2 ++ ")"
   show (Not f) = "¬" ++ show f
   show (Implies f1 f2) = "(" ++ show f1 ++ " → " ++ show f2 ++ ")"
+  show (Equivalent f1 f2) = "(" ++ show f1 ++ " ↔ " ++ show f2 ++ ")"
 
 instance Show Statement where
   show (Axiom s f) = "AXIOM " ++ show s ++ ": " ++ show f ++ ";"
@@ -68,7 +71,7 @@ lexer = Token.makeTokenParser style
           , "BY CONTRADICTION", "QED"
           ]
       , Token.reservedOpNames =
-          [ "∧", "∨", "→", "¬"
+          [ "∧", "∨", "→", "¬", "↔"
           ]
       }
 
