@@ -60,7 +60,7 @@ instance Show Statement where
   show (Given f) = "GIVEN " ++ show f ++ ";"
   show (Assert f) = "ASSERT " ++ show f ++ ";"
   show (Apply s fl) = "APPLY " ++ show s ++ indent (unlines (map show fl)) ++ ";"
-  show (ByContradiction sl) = "BY CONTRADICTION " ++ indent (unlines (map show sl)) ++ ";"
+  show (ByContradiction sl) = "BY CONTRADICTION " ++ "{" ++ indent (unlines (map show sl)) ++ "}"++ ";"
   show Qed = "QED;"
 
 indent :: String -> String
@@ -73,7 +73,7 @@ lexer = Token.makeTokenParser style
       { Token.commentLine = "//"
       , Token.reservedNames =
           [ "AXIOM", "THEOREM", "GIVEN", "ASSERT", "APPLY"
-          , "BY CONTRADICTION", "QED", "True", "False"
+          , "BY", "CONTRADICTION", "QED", "True", "False"
           ]
       , Token.reservedOpNames =
           [ "\x2227", "\x2228", "\x2192", "\x00AC", "\x2194", "(", ")"
@@ -163,7 +163,7 @@ statement = choice
     -- , givenStmt
     -- , assertStmt
     -- , applyStmt
-    -- , byContradictionStmt
+    , byContradictionStmt
     -- , qedStmt
     ] <* optional semi
 
@@ -172,6 +172,9 @@ testParseStat input = case parse (statement <* eof) "" input of
     Left err -> print err
     Right stmt -> print stmt
 
+exampleA :: String
+exampleA = "AXIOM MyAxiom : (A ∧ B → C);"
+
 axiomStmt :: Parser Statement
 axiomStmt = do
     reserved "AXIOM"
@@ -179,103 +182,17 @@ axiomStmt = do
     reservedOp ":"
     Axiom name <$> formula
 
-exampleA :: String
-exampleA = "AXIOM MyAxiom : (A ∧ B → C);"
+exampleB :: String
+exampleB = "BY CONTRADICTION { AXIOM aa : (A ∧ B → C); }"
 
--- thinkStmt :: Parser Statement
--- thinkStmt = do
---     reserved "think"
---     Think <$> expr
+byContradictionStmt :: Parser Statement
+byContradictionStmt = do
+    reserved "BY"
+    reserved "CONTRADICTION"
+    stmts <- braces (statement `sepBy` semi)
+    return (ByContradiction stmts)
 
--- eatStmt :: Parser Statement
--- eatStmt = do
---     reserved "eat"
---     duration <- expr
---     reserved "resource"
---     resource1Name <- identifier
---     reserved "resource"
---     resource2Name <- identifier
---     return $ Eat duration (Resource resource1Name) (Resource resource2Name)
-
--- printStmt :: Parser Statement
--- printStmt = do
---     reserved "print"
---     -- Now we can parse any expression and handle string conversion during evaluation
---     PrintExpr <$> expr
-
--- declareResourceStmt :: Parser Statement
--- declareResourceStmt = do
---     reserved "declareResource"
---     DeclareResource <$> expr 
-
--- loopStmt :: Parser Statement
--- loopStmt = do
---     reserved "loop"
---     Loop <$> braces (many statement)
-
--- spawnStmt :: Parser Statement
--- spawnStmt = do
---     reserved "spawn"
---     processName <- expr
---     body <- braces (many statement)
---     return $ Spawn processName body
-
--- lockAllStmt :: Parser Statement
--- lockAllStmt = do
---     reserved "lockAll"
---     resources <- brackets (commaSep exprNoSpace)
---     variables <- brackets (commaSep identifier)
---     return $ LockAll resources variables
---   where
---     -- Define operators locally for this parser
---     exprNoSpace = buildExpressionParser operatorsNoSpace termNoSpace
---     -- Define the operators table for exprNoSpace
---     operatorsNoSpace = 
---       [ [Infix (reservedOp "++" >> return Concat) AssocLeft]
---       , [Infix (reservedOp "+" >> return Add) AssocLeft,
---          Infix (reservedOp "-" >> return Sub) AssocLeft]
---       , [Infix (reservedOp "%" >> return Mod) AssocLeft]
---       ]
---     termNoSpace = parens expr
---                <|> Var <$> identifier
---                <|> StringLit <$> stringLiteral
---                <|> IntLit <$> integer
---                <|> randExpr
-
--- unlockAllStmt :: Parser Statement
--- unlockAllStmt = do
---     reserved "unlockAll"
---     resources <- brackets $ commaSep resourceReference
---     return $ UnlockAll resources
---   where
---     resourceReference = try (do
---         reserved "resource"
---         Resource <$> identifier)
---       <|> (Resource <$> identifier)
-
--- letStmt :: Parser Statement
--- letStmt = do
---     reserved "let"
---     name <- identifier
---     reservedOp "="
---     value <- expr
---     return $ Let name value
-
--- foreachStmt :: Parser Statement
--- foreachStmt = do
---     reserved "foreach"
---     startVal <- integer
---     reserved "to"
---     endVal <- integer
---     reserved "as"
---     indexVar <- identifier
---     body <- braces (many statement)
---     return $ ForEach startVal endVal indexVar body
-
--- ifStmt :: Parser Statement
--- ifStmt = do
---     reserved "if"
---     condition <- expr
---     thenBlock <- braces (many statement)
---     elseBlock <- option [] (reserved "else" >> braces (many statement))
---     return $ If condition thenBlock elseBlock
+qedStmt :: Parser Statement
+qedStmt = do
+  reserved "QED"
+  return Qed 
