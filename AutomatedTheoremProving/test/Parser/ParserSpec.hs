@@ -11,7 +11,9 @@ import Text.Parsec (ParseError, parse)
 
 import Parser
 
-unitTests = [testCase "Parse axiom" test_axiomStmt]
+unitTests = [testCase "Parse axiom" test_axiomStmt
+             , testCase "Parse assert" test_assertStmt
+             , testCase "Parse apply" test_applyStmt]
 
 propertyTests = []
 
@@ -29,3 +31,8 @@ parseTest parser input expected =
 test_axiomStmt :: Assertion
 test_axiomStmt = parseTest parseProgram "AXIOM MyAxiom : (A ∧ B);" (Program [Axiom "MyAxiom" (And (Var "A") (Var "B"))])
 
+test_assertStmt :: Assertion
+test_assertStmt = parseTest parseProgram "ASSERT A ∨ B;" (Program [Assert (Or (Var "A") (Var "B"))])
+
+test_applyStmt :: Assertion 
+test_applyStmt = parseTest parseProgram "APPLY contrapositive TO (P → Q) GET (¬Q → ¬P);" (Program [Apply "contrapositive" [Implies (Var "P") (Var "Q"), Implies (Not (Var "Q")) (Not (Var "P"))]])
