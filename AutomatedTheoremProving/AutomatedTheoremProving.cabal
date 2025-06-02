@@ -58,6 +58,7 @@ test-suite AutomatedTheoremProving-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Parser.ParserSpec
       Paths_AutomatedTheoremProving
   autogen-modules:
       Paths_AutomatedTheoremProving
