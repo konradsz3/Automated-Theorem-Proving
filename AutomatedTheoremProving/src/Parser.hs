@@ -76,7 +76,7 @@ lexer = Token.makeTokenParser style
           , "BY CONTRADICTION", "QED", "True", "False"
           ]
       , Token.reservedOpNames =
-          [ "\x2227", "\x2228", "\x2192", "\x00AC", "\x2194", "(", ")"
+          [ "\x2227", "\x2228", "\x2192", "\x00AC", "\x2194", "(", ")", ":"
           ]
       }
 
@@ -138,29 +138,18 @@ formula = buildExpressionParser operators term
       ]
 
 example :: String
-example = "\x00AC A ∨ (B ∧ C) → D ↔ E"
+example = "¬ A ∨ (B ∧ C) → D ↔ E"
 
 testParse :: String -> IO ()
 testParse input = case parse (formula <* eof) "" input of
   Left err  -> print err
   Right ast -> print ast
 
-
--- main :: IO ()
--- main = do
---   hSetEncoding stdout utf8
---   hSetEncoding stdin utf8
---   putStrLn "Wczytano:"
---   input <- readFile "input.txt"
---   case parse (whiteSpace >> formula <* eof) "" input of
---     Left err -> print err
---     Right f  -> print f
-
 statement :: Parser Statement
 statement = choice
     [ axiomStmt
-    -- , theoremStmt
-    -- , givenStmt
+     , theoremStmt
+     , givenStmt
     -- , assertStmt
     -- , applyStmt
     -- , byContradictionStmt
@@ -182,10 +171,20 @@ axiomStmt = do
 exampleA :: String
 exampleA = "AXIOM MyAxiom : (A ∧ B → C);"
 
--- thinkStmt :: Parser Statement
--- thinkStmt = do
---     reserved "think"
---     Think <$> expr
+exampleG :: String
+exampleG = "GIVEN (A ∧ B → C);"
+
+theoremStmt :: Parser Statement
+theoremStmt = do
+    reserved "THEOREM"
+    name <- identifier
+    reservedOp ":"
+    Theorem name <$> formula
+
+givenStmt :: Parser Statement
+givenStmt = do
+  reserved "GIVEN"
+  Given <$> formula
 
 -- eatStmt :: Parser Statement
 -- eatStmt = do
