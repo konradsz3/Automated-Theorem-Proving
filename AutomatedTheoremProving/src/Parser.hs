@@ -59,7 +59,7 @@ instance Show Statement where
   show (Theorem s f) = "THEOREM " ++ show s ++ ": " ++ show f ++ ";"
   show (Given f) = "GIVEN " ++ show f ++ ";"
   show (Assert f) = "ASSERT " ++ show f ++ ";"
-  show (Apply s fl) = "APPLY " ++ show s ++ indent (unlines (map show fl)) ++ ";"
+  show (Apply s fl) = "APPLY " ++ show s ++ " TO " ++ show (head fl) ++ " GET " ++ show (fl!!1) ++ ";"
   show (ByContradiction sl) = "BY CONTRADICTION " ++ "{" ++ indent (unlines (map show sl)) ++ "}"++ ";"
   show Qed = "QED;"
 
@@ -74,9 +74,10 @@ lexer = Token.makeTokenParser style
       , Token.reservedNames =
           [ "AXIOM", "THEOREM", "GIVEN", "ASSERT", "APPLY"
           , "BY", "CONTRADICTION", "QED", "True", "False"
+          , "TO", "GET"
           ]
       , Token.reservedOpNames =
-          [ "\x2227", "\x2228", "\x2192", "\x00AC", "\x2194", "(", ")"
+          [ "\x2227", "\x2228", "\x2192", "\x00AC", "\x2194", "(", ")", ":"
           ]
       }
 
@@ -138,33 +139,25 @@ formula = buildExpressionParser operators term
       ]
 
 example :: String
-example = "\x00AC A ∨ (B ∧ C) → D ↔ E"
+example = "¬ A ∨ (B ∧ C) → D ↔ E"
 
 testParse :: String -> IO ()
 testParse input = case parse (formula <* eof) "" input of
   Left err  -> print err
   Right ast -> print ast
 
-
--- main :: IO ()
--- main = do
---   hSetEncoding stdout utf8
---   hSetEncoding stdin utf8
---   putStrLn "Wczytano:"
---   input <- readFile "input.txt"
---   case parse (whiteSpace >> formula <* eof) "" input of
---     Left err -> print err
---     Right f  -> print f
-
 statement :: Parser Statement
 statement = choice
     [ axiomStmt
-    -- , theoremStmt
-    -- , givenStmt
-    -- , assertStmt
-    -- , applyStmt
-    , byContradictionStmt
-    -- , qedStmt
+<<<<<<< HEAD
+      , theoremStmt
+      , givenStmt
+=======
+      , assertStmt
+      , applyStmt
+>>>>>>> cfc56dd20015aa570ff8583be82059f145c8649d
+      , byContradictionStmt
+      , qedStmt
     ] <* optional semi
 
 testParseStat :: String -> IO ()
@@ -181,6 +174,45 @@ axiomStmt = do
     name <- identifier
     reservedOp ":"
     Axiom name <$> formula
+
+exampleAxiom :: String
+exampleAxiom = "AXIOM MyAxiom : (A ∧ B → C);"
+
+assertStmt :: Parser Statement
+assertStmt = do
+    reserved "ASSERT"
+    Assert <$> formula
+
+exampleAssert :: String
+exampleAssert = "ASSERT A ∧ B;"
+
+applyStmt :: Parser Statement
+applyStmt = do
+    reserved "APPLY"
+    rule <- identifier
+    reserved "TO"
+    firstFormula <- formula
+    reserved "GET"
+    secondFormula <- formula
+    return (Apply rule [firstFormula, secondFormula])
+
+exampleApply :: String
+exampleApply = "APPLY contrapositive TO (P → Q) GET (¬Q → ¬P);"
+
+exampleG :: String
+exampleG = "GIVEN (A ∧ B → C);"
+
+theoremStmt :: Parser Statement
+theoremStmt = do
+    reserved "THEOREM"
+    name <- identifier
+    reservedOp ":"
+    Theorem name <$> formula
+
+givenStmt :: Parser Statement
+givenStmt = do
+  reserved "GIVEN"
+  Given <$> formula
 
 exampleB :: String
 exampleB = "BY CONTRADICTION { AXIOM aa : (A ∧ B → C); }"
