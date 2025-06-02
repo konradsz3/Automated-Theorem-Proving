@@ -11,9 +11,13 @@ import Text.Parsec (ParseError, parse)
 
 import Parser
 
+unitTests = [testCase "Parse axiom" test_axiomStmt]
+
+propertyTests = []
+
 tests =
     [ testGroup "Unit tests" unitTests
-    , testGroup "Property-based tests" propertyTests
+     , testGroup "Property-based tests" propertyTests
     ]
 
 parseTest :: (Show a, Eq a) => (String -> Either ParseError a) -> String -> a -> Assertion
@@ -21,3 +25,7 @@ parseTest parser input expected =
     case parser input of
         Left err -> assertFailure $ "Parse error: " ++ show err
         Right result -> assertEqual ("Parsing: " ++ input) expected result
+
+test_axiomStmt :: Assertion
+test_axiomStmt = parseTest parseProgram "AXIOM MyAxiom : (A ∧ B);" (Program [Axiom "MyAxiom" (And (Var "A") (Var "B"))])
+
