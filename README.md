@@ -13,9 +13,7 @@ Adam Dęby:
 Aleksandra Klemczak:
 - instance Show Formula,
 - statement,
-- axiomStmt,
-- assertStmt,
-- applyStmt,
+- axiomStmt, assertStmt, applyStmt,
 - test_axiomStmt,
 - test_assertStmt,
 - test_applyStmt,
