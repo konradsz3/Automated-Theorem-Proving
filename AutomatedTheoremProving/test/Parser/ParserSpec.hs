@@ -24,8 +24,10 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
 propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula
                 , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName
                 , testProperty "Random apply formula with name can be parsed" prop_applyWithName
-                ,testProperty "Whitespace is insignificant" prop_whitespace
-                , testProperty "Random theorem formula with name can be parsed" prop_theoremWithName]
+                , testProperty "Whitespace is insignificant" prop_whitespace
+                , testProperty "Random theorem formula with name can be parsed" prop_theoremWithName
+                , testProperty "Random given formula with name can be parsed" prop_givenWithName
+                , testProperty "Random assert formula with name can be parsed" prop_assertWithName]
 
 tests =
     [ testGroup "Unit tests" unitTests
@@ -141,6 +143,30 @@ prop_theoremWithName = forAll genName $ \varName ->
             stmt = Theorem varName expr 
             prog = Program [stmt]
             src = "THEOREM " ++ varName ++ ": " ++ show expr ++ ";"
+         in
+            case parseProgram src of
+                Right p -> prog == p
+                Left _ -> False
+
+prop_givenWithName :: Property
+prop_givenWithName = forAll genName $ \varName ->
+    forAll (genFormula 3) $ \expr ->
+        let
+            stmt = Given expr 
+            prog = Program [stmt]
+            src = "GIVEN " ++ show expr ++ ";"
+         in
+            case parseProgram src of
+                Right p -> prog == p
+                Left _ -> False
+
+prop_assertWithName :: Property
+prop_assertWithName = forAll genName $ \varName ->
+    forAll (genFormula 3) $ \expr ->
+        let
+            stmt = Assert expr 
+            prog = Program [stmt]
+            src = "ASSERT " ++ show expr ++ ";"
          in
             case parseProgram src of
                 Right p -> prog == p
