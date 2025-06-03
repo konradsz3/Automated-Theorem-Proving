@@ -21,7 +21,7 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
             , testCase "Parse byContradiction" test_byContradictionStmt
             , testCase "Parse qed" test_qedStmt]
 
-propertyTests = []
+propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula]
 
 tests =
     [ testGroup "Unit tests" unitTests
@@ -82,3 +82,10 @@ genFormula n
                 , (1, Equivalent <$> subformula <*> subformula)
                 , (1, Const <$> genBool)
                 ]
+
+prop_randomFormula :: Property 
+prop_randomFormula = forAll (genFormula 2) $ \form ->
+    let src = "AXIOM test: " ++ show form ++ ";"
+        in case parseProgram src of
+            Right _ -> True 
+            Left _ -> False

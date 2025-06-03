@@ -50,7 +50,7 @@ instance Show Formula where
   show (Const False) = "False"
   show (And f1 f2) = "(" ++ show f1 ++ " \x2227 " ++ show f2 ++ ")"
   show (Or f1 f2) = "(" ++ show f1 ++ " \x2228 " ++ show f2 ++ ")"
-  show (Not f) = "\x00AC " ++ show f
+  show (Not f) = "(" ++ "\x00AC " ++ show f ++ ")"
   show (Implies f1 f2) = "(" ++ show f1 ++ " \x2192 " ++ show f2 ++ ")"
   show (Equivalent f1 f2) = "(" ++ show f1 ++ " \x2194 " ++ show f2 ++ ")"
 
@@ -90,9 +90,6 @@ reserved = Token.reserved lexer
 reservedOp :: String -> Parser ()
 reservedOp = Token.reservedOp lexer
 
-stringLiteral :: Parser String
-stringLiteral = Token.stringLiteral lexer
-
 parens :: Parser a -> Parser a
 parens = Token.parens lexer
 
@@ -119,9 +116,10 @@ term :: Parser Formula
 term = parens formula
     <|> Const <$> cons
     <|> Var <$> identifier
+    <|> Not <$> (reservedOp "\x00AC" *> term)
 
 formula :: Parser Formula
-formula = buildExpressionParser operators term
+formula = whiteSpace *> buildExpressionParser operators term
   where
     operators =
       [ [Prefix (reservedOp "\x00AC" >> return Not)]
@@ -130,14 +128,6 @@ formula = buildExpressionParser operators term
       , [Infix  (reservedOp "\x2192" >> return Implies) AssocRight]
       , [Infix  (reservedOp "\x2194" >> return Equivalent) AssocRight]
       ]
-
--- example :: String
--- example = "¬ A ∨ (B ∧ C) → D ↔ E"
-
--- testParse :: String -> IO ()
--- testParse input = case parse (formula <* eof) "" input of
---   Left err  -> print err
---   Right ast -> print ast
 
 statement :: Parser Statement
 statement = choice
@@ -150,14 +140,6 @@ statement = choice
       , qedStmt
     ] <* optional semi
 
--- testParseStat :: String -> IO ()
--- testParseStat input = case parse (statement <* eof) "" input of
---     Left err -> print err
---     Right stmt -> print stmt
-
--- exampleA :: String
--- exampleA = "AXIOM MyAxiom : (A ∧ B → C);"
-
 axiomStmt :: Parser Statement
 axiomStmt = do
     reserved "AXIOM"
@@ -165,16 +147,11 @@ axiomStmt = do
     reservedOp ":"
     Axiom name <$> formula
 
--- exampleAxiom :: String
--- exampleAxiom = "AXIOM MyAxiom : (A ∧ B → C);"
-
 assertStmt :: Parser Statement
 assertStmt = do
     reserved "ASSERT"
     Assert <$> formula
 
--- exampleAssert :: String
--- exampleAssert = "ASSERT A ∧ B;"
 
 applyStmt :: Parser Statement
 applyStmt = do
@@ -186,11 +163,6 @@ applyStmt = do
     secondFormula <- formula
     return (Apply rule [firstFormula, secondFormula])
 
--- exampleApply :: String
--- exampleApply = "APPLY contrapositive TO (P → Q) GET (¬Q → ¬P);"
-
--- exampleG :: String
--- exampleG = "GIVEN (A ∧ B → C);"
 
 theoremStmt :: Parser Statement
 theoremStmt = do
@@ -204,8 +176,6 @@ givenStmt = do
   reserved "GIVEN"
   Given <$> formula
 
--- exampleB :: String
--- exampleB = "BY CONTRADICTION { AXIOM aa : (A ∧ B → C); }"
 
 byContradictionStmt :: Parser Statement
 byContradictionStmt = do
@@ -219,7 +189,6 @@ qedStmt = do
   reserved "QED"
   return Qed 
 
--- Program parser
 programParser :: Parser Program
 programParser = do
     whiteSpace
@@ -227,6 +196,5 @@ programParser = do
     eof
     return $ Program stmts
 
--- Parse a string into a Program
 parseProgram :: String -> Either ParseError Program
 parseProgram = parse programParser ""
