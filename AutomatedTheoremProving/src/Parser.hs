@@ -50,7 +50,13 @@ instance Show Formula where
   show (Const False) = "False"
   show (And f1 f2) = "(" ++ show f1 ++ " \x2227 " ++ show f2 ++ ")"
   show (Or f1 f2) = "(" ++ show f1 ++ " \x2228 " ++ show f2 ++ ")"
-  show (Not f) = "(" ++ "\x00AC " ++ show f ++ ")"
+  show (Not f) = "¬" ++ showNotArg f
+   where
+    showNotArg x@(And _ _) = "(" ++ show x ++ ")"
+    showNotArg x@(Or _ _) = "(" ++ show x ++ ")"
+    showNotArg x@(Implies _ _) = "(" ++ show x ++ ")"
+    showNotArg x@(Equivalent _ _) = "(" ++ show x ++ ")"
+    showNotArg x = show x
   show (Implies f1 f2) = "(" ++ show f1 ++ " \x2192 " ++ show f2 ++ ")"
   show (Equivalent f1 f2) = "(" ++ show f1 ++ " \x2194 " ++ show f2 ++ ")"
 
