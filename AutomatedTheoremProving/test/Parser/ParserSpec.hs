@@ -23,6 +23,7 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
 
 propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula
                 , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName
+                , testProperty "Random apply formula with name can be parsed" prop_applyWithName
                 ,testProperty "Whitespace is insignificant" prop_whitespace]
 
 tests =
@@ -105,6 +106,19 @@ prop_axiomWithName = forAll genName $ \varName ->
             stmt = Axiom varName expr 
             prog = Program [stmt]
             src = "AXIOM " ++ varName ++ ": " ++ show expr ++ ";"
+         in
+            case parseProgram src of
+                Right p -> prog == p
+                Left _ -> False
+
+prop_applyWithName :: Property
+prop_applyWithName = forAll genName $ \varName ->
+    forAll (genFormula 3) $ \expr1 ->
+    forAll (genFormula 3) $ \expr2 ->
+        let
+            stmt = Apply varName [expr1, expr2] 
+            prog = Program [stmt]
+            src = "APPLY " ++ varName ++ " TO " ++ show expr1 ++ " GET " ++ show expr2 ++ ";"
          in
             case parseProgram src of
                 Right p -> prog == p
