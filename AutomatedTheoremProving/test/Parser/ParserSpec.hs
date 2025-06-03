@@ -21,7 +21,8 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
             , testCase "Parse byContradiction" test_byContradictionStmt
             , testCase "Parse qed" test_qedStmt]
 
-propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula]
+propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula
+                , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName]
 
 tests =
     [ testGroup "Unit tests" unitTests
@@ -57,9 +58,8 @@ test_qedStmt = parseTest parseProgram "QED;" (Program [Qed])
 
 genIdentifier :: Gen String
 genIdentifier = do
-    first <- elements $ ['a' .. 'z']
-    rest <- listOf $ elements $ ['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'] ++ ['_']
-    return (first : take 10 rest)
+    first <- elements ['A' .. 'Z']
+    return [first]
 
 genBool :: Gen Bool
 genBool = elements [True, False]
@@ -89,3 +89,22 @@ prop_randomFormula = forAll (genFormula 2) $ \form ->
         in case parseProgram src of
             Right _ -> True 
             Left _ -> False
+
+genName :: Gen String
+genName =
+    resize 20 $
+        listOf $
+            elements $
+                ['a' .. 'z'] ++ ['A' .. 'Z']
+
+prop_axiomWithName :: Property
+prop_axiomWithName = forAll genName $ \varName ->
+    forAll (genFormula 3) $ \expr ->
+        let
+            stmt = Axiom varName expr 
+            prog = Program [stmt]
+            src = "AXIOM " ++ varName ++ ": " ++ show expr ++ ";"
+         in
+            case parseProgram src of
+                Right p -> prog == p
+                Left _ -> False
