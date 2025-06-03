@@ -19,7 +19,9 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
             , testCase "Parse assert" test_assertStmt
             , testCase "Parse apply" test_applyStmt
             , testCase "Parse byContradiction" test_byContradictionStmt
-            , testCase "Parse qed" test_qedStmt]
+            , testCase "Parse qed" test_qedStmt
+            , testCase "Parse error" test_invalidSyntax
+            , testCase "Test snipet" test_ATPSnippet]
 
 propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula
                 , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName
@@ -131,3 +133,22 @@ prop_theoremWithName = forAll genName $ \varName ->
             case parseProgram src of
                 Right p -> prog == p
                 Left _ -> False
+
+test_invalidSyntax :: Assertion
+test_invalidSyntax = 
+    case parseProgram "AXIOM x " of
+        Left _ -> return ()  -- Expected to fail
+        Right _ -> assertFailure "Should have failed to parse incomplete Axiom"
+
+test_ATPSnippet :: Assertion
+test_ATPSnippet = do
+    let program = unlines
+            [ "AXIOM contrapositive: (P → Q) ↔ (¬Q → ¬P);"
+            , "THEOREM simple_implication: P → Q → (¬Q → ¬P);"
+            , "GIVEN P → Q;"
+            , "APPLY contrapositive TO (P → Q) GET (¬Q → ¬P);"
+            , "QED;"
+            ]
+    case parseProgram program of
+        Right _ -> return ()
+        Left err -> assertFailure $ "Failed to parse snippet: " ++ show err
