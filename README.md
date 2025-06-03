@@ -1,14 +1,14 @@
 Adam Dęby:
--lexer
--byContradictionStmt
--qedStmt
--program parser
--test byContradiction
--test qed
--test apply
--genName
--prop_axiomWithName
--prop_applyWithName
+- lexer
+- byContradictionStmt
+- qedStmt
+- program parser
+- test byContradiction
+- test qed
+- test apply
+- genName
+- prop_axiomWithName
+- prop_applyWithName
 
 Aleksandra Klemczak:
 - instance Show Formula,
