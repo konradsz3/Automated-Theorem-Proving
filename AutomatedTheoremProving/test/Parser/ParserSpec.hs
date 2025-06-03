@@ -21,7 +21,8 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
             , testCase "Parse byContradiction" test_byContradictionStmt
             , testCase "Parse qed" test_qedStmt
             , testCase "Parse error" test_invalidSyntax
-            , testCase "Test snipet" test_ATPSnippet]
+            , testCase "Test snipet" test_ATPSnippet
+            , testCase "Parse error" test_invalidSyntax2]
 
 propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula
                 , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName
@@ -192,3 +193,9 @@ test_ATPSnippet = do
     case parseProgram program of
         Right _ -> return ()
         Left err -> assertFailure $ "Failed to parse snippet: " ++ show err
+
+test_invalidSyntax2 :: Assertion
+test_invalidSyntax2 = 
+    case parseProgram "AXIOM name: A ∧" of
+        Left _ -> return ()  -- Expected to fail
+        Right _ -> assertFailure "Should have failed to parse incomplete Axiom"
