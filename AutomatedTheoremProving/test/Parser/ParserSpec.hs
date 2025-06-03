@@ -93,7 +93,7 @@ prop_randomFormula = forAll (genFormula 2) $ \form ->
 genName :: Gen String
 genName =
     resize 20 $
-        listOf $
+        listOf1 $
             elements $
                 ['a' .. 'z'] ++ ['A' .. 'Z']
 
