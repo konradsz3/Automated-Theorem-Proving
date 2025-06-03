@@ -1,8 +1,8 @@
 name:                AutomatedTheoremProving
 version:             0.1.0.0
-github:              "githubuser/AutomatedTheoremProving"
+github:              "konradsz3/Automated-Theorem-Proving"
 license:             BSD-3-Clause
-author:              "Author name here"
+author:              "Konrad, Adam, Ola"
 maintainer:          "example@example.com"
 copyright:           "2025 Author name here"
 
@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- parsec
 
 ghc-options:
 - -Wall
@@ -57,3 +58,8 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - AutomatedTheoremProving
+    - HUnit >= 1.6
+    - QuickCheck >= 2.14
+    - test-framework >= 0.8
+    - test-framework-hunit >= 0.3
+    - test-framework-quickcheck2 >= 0.3

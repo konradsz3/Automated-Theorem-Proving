@@ -7,9 +7,9 @@ cabal-version: 2.2
 name:           AutomatedTheoremProving
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/AutomatedTheoremProving#readme>
-homepage:       https://github.com/githubuser/AutomatedTheoremProving#readme
-bug-reports:    https://github.com/githubuser/AutomatedTheoremProving/issues
-author:         Author name here
+homepage:       https://github.com/konradsz3/Automated-Theorem-Proving#readme
+bug-reports:    https://github.com/konradsz3/Automated-Theorem-Proving/issues
+author:         Konrad, Adam, Ola
 maintainer:     example@example.com
 copyright:      2025 Author name here
 license:        BSD-3-Clause
@@ -21,11 +21,12 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/AutomatedTheoremProving
+  location: https://github.com/konradsz3/Automated-Theorem-Proving
 
 library
   exposed-modules:
       Lib
+      Parser
   other-modules:
       Paths_AutomatedTheoremProving
   autogen-modules:
@@ -35,6 +36,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , parsec
   default-language: Haskell2010
 
 executable AutomatedTheoremProving-exe
@@ -49,12 +51,14 @@ executable AutomatedTheoremProving-exe
   build-depends:
       AutomatedTheoremProving
     , base >=4.7 && <5
+    , parsec
   default-language: Haskell2010
 
 test-suite AutomatedTheoremProving-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Parser.ParserSpec
       Paths_AutomatedTheoremProving
   autogen-modules:
       Paths_AutomatedTheoremProving
@@ -63,5 +67,11 @@ test-suite AutomatedTheoremProving-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       AutomatedTheoremProving
+    , HUnit >=1.6
+    , QuickCheck >=2.14
     , base >=4.7 && <5
+    , parsec
+    , test-framework >=0.8
+    , test-framework-hunit >=0.3
+    , test-framework-quickcheck2 >=0.3
   default-language: Haskell2010
