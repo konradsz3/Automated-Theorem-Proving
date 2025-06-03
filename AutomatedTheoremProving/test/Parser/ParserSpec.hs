@@ -25,8 +25,11 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
 
 propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula
                 , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName
-                ,testProperty "Whitespace is insignificant" prop_whitespace
-                , testProperty "Random theorem formula with name can be parsed" prop_theoremWithName]
+                , testProperty "Random apply formula with name can be parsed" prop_applyWithName
+                , testProperty "Whitespace is insignificant" prop_whitespace
+                , testProperty "Random theorem formula with name can be parsed" prop_theoremWithName
+                , testProperty "Random given formula with name can be parsed" prop_givenWithName
+                , testProperty "Random assert formula with name can be parsed" prop_assertWithName]
 
 tests =
     [ testGroup "Unit tests" unitTests
@@ -113,6 +116,19 @@ prop_axiomWithName = forAll genName $ \varName ->
                 Right p -> prog == p
                 Left _ -> False
 
+prop_applyWithName :: Property
+prop_applyWithName = forAll genName $ \varName ->
+    forAll (genFormula 3) $ \expr1 ->
+    forAll (genFormula 3) $ \expr2 ->
+        let
+            stmt = Apply varName [expr1, expr2] 
+            prog = Program [stmt]
+            src = "APPLY " ++ varName ++ " TO " ++ show expr1 ++ " GET " ++ show expr2 ++ ";"
+         in
+            case parseProgram src of
+                Right p -> prog == p
+                Left _ -> False
+
 prop_whitespace :: Property
 prop_whitespace = forAll genName $ \varName ->
     forAll (genFormula 2 )$ \form ->
@@ -129,6 +145,30 @@ prop_theoremWithName = forAll genName $ \varName ->
             stmt = Theorem varName expr 
             prog = Program [stmt]
             src = "THEOREM " ++ varName ++ ": " ++ show expr ++ ";"
+         in
+            case parseProgram src of
+                Right p -> prog == p
+                Left _ -> False
+
+prop_givenWithName :: Property
+prop_givenWithName = forAll genName $ \varName ->
+    forAll (genFormula 3) $ \expr ->
+        let
+            stmt = Given expr 
+            prog = Program [stmt]
+            src = "GIVEN " ++ show expr ++ ";"
+         in
+            case parseProgram src of
+                Right p -> prog == p
+                Left _ -> False
+
+prop_assertWithName :: Property
+prop_assertWithName = forAll genName $ \varName ->
+    forAll (genFormula 3) $ \expr ->
+        let
+            stmt = Assert expr 
+            prog = Program [stmt]
+            src = "ASSERT " ++ show expr ++ ";"
          in
             case parseProgram src of
                 Right p -> prog == p
