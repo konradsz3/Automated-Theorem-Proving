@@ -22,7 +22,8 @@ unitTests = [testCase "Parse axiom" test_axiomStmt,
             , testCase "Parse qed" test_qedStmt]
 
 propertyTests = [testProperty "Random formulas can be parsed" prop_randomFormula
-                , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName]
+                , testProperty "Random axiom formula with name can be parsed" prop_axiomWithName
+                ,testProperty "Whitespace is insignificant" prop_whitespace]
 
 tests =
     [ testGroup "Unit tests" unitTests
@@ -108,3 +109,12 @@ prop_axiomWithName = forAll genName $ \varName ->
             case parseProgram src of
                 Right p -> prog == p
                 Left _ -> False
+
+prop_whitespace :: Property
+prop_whitespace = forAll genName $ \varName ->
+    forAll (genFormula 2 )$ \form ->
+        let
+            compact = "AXIOM " ++ varName ++ ": " ++ show form ++ ";"
+            spaced = "AXIOM  " ++ varName ++ "  : " ++ show form ++ "  ;"
+         in
+            parseProgram compact === parseProgram spaced
