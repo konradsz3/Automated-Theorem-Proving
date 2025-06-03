@@ -43,7 +43,7 @@ parseTest parser input expected =
         Right result -> assertEqual ("Parsing: " ++ input) expected result
 
 test_axiomStmt :: Assertion
-test_axiomStmt = parseTest parseProgram "AXIOM MyAxiom : (A ∧ B);" (Program [Axiom "MyAxiom" (And (Var "A") (Var "B"))])
+test_axiomStmt = parseTest parseProgram "AXIOM MyAxiom : (A ↔ B);" (Program [Axiom "MyAxiom" (Equivalent (Var "A") (Var "B"))])
 
 test_theorem :: Assertion
 test_theorem = parseTest parseProgram "THEOREM simple_implication: (P → Q) → (¬Q → ¬P);" (Program [Theorem "simple_implication" (Implies (Implies (Var "P") (Var "Q")) (Implies (Not (Var "Q")) (Not (Var "P"))))])
