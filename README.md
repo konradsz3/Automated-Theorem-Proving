@@ -33,6 +33,7 @@ Konrad Szymański:
 - test_theorem, test_given
 - prop_randomFormula
 - prop_whitespace
--  prop_whitespace
--  test_invalidSyntax
--  test_ATPSnippet
+- prop_whitespace
+- test_invalidSyntax
+- test_ATPSnippet
+- proofStmt, test_proof
