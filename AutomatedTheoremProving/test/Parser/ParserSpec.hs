@@ -13,9 +13,10 @@ import Text.Parsec (ParseError, parse)
 import Parser
 
 
-unitTests = [testCase "Parse axiom" test_axiomStmt,
-             testCase "Parse theorem" test_theorem,
-             testCase "Parse given" test_given
+unitTests = [testCase "Parse axiom" test_axiomStmt
+            , testCase "Parse theorem" test_theorem
+            , testCase "Parse proof" test_proof
+            , testCase "Parse given" test_given
             , testCase "Parse assert" test_assertStmt
             , testCase "Parse apply" test_applyStmt
             , testCase "Parse byContradiction" test_byContradictionStmt
@@ -59,10 +60,13 @@ test_applyStmt :: Assertion
 test_applyStmt = parseTest parseProgram "APPLY contrapositive TO (P → Q) GET (¬Q → ¬P);" (Program [Apply "contrapositive" [Implies (Var "P") (Var "Q"), Implies (Not (Var "Q")) (Not (Var "P"))]])
 
 test_byContradictionStmt :: Assertion
-test_byContradictionStmt = parseTest parseProgram "BY CONTRADICTION { AXIOM MyAxiom : (A ∧ B → C); }" (Program [ByContradiction [Axiom "MyAxiom" (Implies (And (Var "A") (Var "B")) (Var "C") )]])
+test_byContradictionStmt = parseTest parseProgram "BY CONTRADICTION { AXIOM MyAxiom : (A ∧ B → C); GIVEN P → Q;};" (Program [ByContradiction [Axiom "MyAxiom" (Implies (And (Var "A") (Var "B")) (Var "C") ), Given (Implies (Var "P") (Var "Q"))]])
 
 test_qedStmt :: Assertion
 test_qedStmt = parseTest parseProgram "QED;" (Program [Qed])
+
+test_proof :: Assertion 
+test_proof = parseTest parseProgram "PROOF { GIVEN P → Q; APPLY contrapositive TO (P → Q) GET (¬Q → ¬P); QED; };" (Program [Proof [Given (Implies (Var "P") (Var "Q")), Apply "contrapositive" [Implies (Var "P") (Var"Q"), Implies (Not (Var "Q")) (Not (Var "P"))], Qed]])
 
 genIdentifier :: Gen String
 genIdentifier = do
