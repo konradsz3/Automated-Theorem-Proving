@@ -32,7 +32,8 @@ data Formula
 -- Statements in the proof language
 data Statement
   = Axiom String Formula           -- Define an axiom
-  | Theorem String Formula         -- State a theorem
+  | Theorem String Formula 
+  | Proof [Statement]        -- State a theorem
   | Given Formula                  -- Assumption for a proof
   | Assert Formula                 -- Claim without justification
   | Apply String [Formula]         -- Apply a rule or theorem
@@ -57,6 +58,7 @@ instance Show Formula where
 instance Show Statement where
   show (Axiom s f) = "AXIOM " ++ show s ++ ": " ++ show f ++ ";"
   show (Theorem s f) = "THEOREM " ++ show s ++ ": " ++ show f ++ ";"
+  show (Proof sl) = "PROOF " ++ "{" ++ indent (unlines (map show sl)) ++ "};"
   show (Given f) = "GIVEN " ++ show f ++ ";"
   show (Assert f) = "ASSERT " ++ show f ++ ";"
   show (Apply s fl) = "APPLY " ++ show s ++ " TO " ++ show (head fl) ++ " GET " ++ show (fl!!1) ++ ";"
@@ -74,7 +76,7 @@ lexer = Token.makeTokenParser style
       , Token.reservedNames =
           [ "AXIOM", "THEOREM", "GIVEN", "ASSERT", "APPLY"
           , "BY", "CONTRADICTION", "QED", "True", "False"
-          , "TO", "GET"
+          , "TO", "GET", "PROOF"
           ]
       , Token.reservedOpNames =
           [ "\x2227", "\x2228", "\x2192", "\x00AC", "\x2194", "(", ")", ":"
@@ -133,6 +135,7 @@ statement :: Parser Statement
 statement = choice
     [ axiomStmt
       , theoremStmt
+      , proofStmt
       , givenStmt
       , assertStmt
       , applyStmt
@@ -177,12 +180,29 @@ givenStmt = do
   Given <$> formula
 
 
+-- byContradictionStmt :: Parser Statement
+-- byContradictionStmt = do
+--     reserved "BY"
+--     reserved "CONTRADICTION"
+--     stmts <- braces (statement `sepBy` semi)
+--     return (ByContradiction stmts)
+
+-- proofStmt :: Parser Statement
+-- proofStmt = do
+--     reserved "PROOF"
+--     stmts <- braces (statement `sepBy` semi)
+--     return (Proof stmts)
+
 byContradictionStmt :: Parser Statement
 byContradictionStmt = do
-    reserved "BY"
-    reserved "CONTRADICTION"
-    stmts <- braces (statement `sepBy` semi)
-    return (ByContradiction stmts)
+  reserved "BY"
+  reserved "CONTRADICTION"
+  ByContradiction <$> braces (many statement)
+
+proofStmt :: Parser Statement
+proofStmt = do
+  reserved "PROOF"
+  Proof <$> braces (many statement)
 
 qedStmt :: Parser Statement
 qedStmt = do
