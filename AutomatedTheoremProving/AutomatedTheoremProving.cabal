@@ -27,6 +27,7 @@ library
   exposed-modules:
       Lib
       Parser
+      Semantic
   other-modules:
       Paths_AutomatedTheoremProving
   autogen-modules:
