@@ -37,6 +37,8 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , containers
+    , mtl
     , parsec
   default-language: Haskell2010
 
@@ -52,6 +54,8 @@ executable AutomatedTheoremProving-exe
   build-depends:
       AutomatedTheoremProving
     , base >=4.7 && <5
+    , containers
+    , mtl
     , parsec
   default-language: Haskell2010
 
@@ -60,6 +64,7 @@ test-suite AutomatedTheoremProving-test
   main-is: Spec.hs
   other-modules:
       Parser.ParserSpec
+      Semantics.SemanticsSpec
       Paths_AutomatedTheoremProving
   autogen-modules:
       Paths_AutomatedTheoremProving
@@ -71,6 +76,8 @@ test-suite AutomatedTheoremProving-test
     , HUnit >=1.6
     , QuickCheck >=2.14
     , base >=4.7 && <5
+    , containers
+    , mtl
     , parsec
     , test-framework >=0.8
     , test-framework-hunit >=0.3

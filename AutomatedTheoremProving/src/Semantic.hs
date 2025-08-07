@@ -17,6 +17,7 @@ evalFormula env = \case
     Or a b      -> evalFormula env a || evalFormula env b
     Not a       -> not (evalFormula env a)
     Implies a b -> not (evalFormula env a) || evalFormula env b
+    Equivalent a b -> (not (evalFormula env a) || evalFormula env b) && (not (evalFormula env b) || evalFormula env a)
 
 data Context = Context
     { axioms :: Map.Map String Formula
@@ -36,6 +37,7 @@ provable ctx f =
         Or a b  -> allVars [a, b] ++ acc
         Not a   -> allVars [a] ++ acc
         Implies a b -> allVars [a, b] ++ acc
+        Equivalent a b -> allVars [a, b] ++ acc
         _      -> acc) []
 
     allEnvs :: [String] -> [[(String, Bool)]]
