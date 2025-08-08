@@ -27,7 +27,12 @@ Aleksandra Klemczak:
 - prop_givenWithName,
 - prop_assertWithName,
 - test_invalidSyntax2,
+***************************
+- semantic,
+- provableUnitTests,
+- programUnitTest,
 
+  
 Konrad Szymański:
 - template projektu
 - instance show statement
