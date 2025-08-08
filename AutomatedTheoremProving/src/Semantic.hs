@@ -23,7 +23,7 @@ data Context = Context
     { axioms :: Map.Map String Formula
     , givens :: [Formula]
     , goals  :: [Formula]
-    } deriving (Show)
+    } deriving (Show, Eq)
 
 provable :: Context -> Formula -> Bool
 provable ctx f =
