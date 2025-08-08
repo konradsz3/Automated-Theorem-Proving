@@ -29,10 +29,6 @@ unitTests = [testCase "Evaluate true variable" test_evalvar1
             , testCase "Evaluate false equivalent statement" test_evaleq2
             ]
 
-tests =
-    [ testGroup "Unit tests" unitTests
-    ]
-
 -- semanticsTest :: String -> Program -> Assertion 
 -- semanticsTest input program = case evalProgram program of 
 --     Left err -> assertFailure $ "Evaluation failed: " ++ err 
@@ -82,3 +78,51 @@ test_evaleq1 = assertEqual "Equivalent Var X Var X" True (evalFormula exampleEnv
 
 test_evaleq2 :: Assertion
 test_evaleq2 = assertEqual "Equivalent Var X Var Y" False (evalFormula exampleEnv (Equivalent (Var "X") (Var "Y")))
+
+provableUnitTests =
+  [ testCase "True is always provable" test_trueAlwaysProvable
+  , testCase "False without givens is not provable" test_falseNotProvable
+  , testCase "(p or not p) is provable" test_excludedMiddle
+  , testCase "p and q without givens is not provable" test_andWithoutGivens
+  , testCase "Variable from givens is provable" test_givenProvable
+  , testCase "(p implies p) is provable" test_implicationTautology
+  , testCase "(p equivalent p) is provable" test_equivalenceTautology
+  ]
+
+test_trueAlwaysProvable :: Assertion
+test_trueAlwaysProvable =
+  assertEqual "Const True" True (provable emptyContext (Const True))
+
+test_falseNotProvable :: Assertion
+test_falseNotProvable =
+  assertEqual "Const False" False (provable emptyContext (Const False))
+
+test_excludedMiddle :: Assertion
+test_excludedMiddle =
+  let f = Or (Var "p") (Not (Var "p"))
+  in assertEqual "p \x2228 not p" True (provable emptyContext f)
+
+test_andWithoutGivens :: Assertion
+test_andWithoutGivens =
+  let f = And (Var "p") (Var "q")
+  in assertEqual "p \x2227 q without givens" False (provable emptyContext f)
+
+test_givenProvable :: Assertion
+test_givenProvable =
+  let ctx = emptyContext { givens = [Var "p"] }
+  in assertEqual "Variable from givens" True (provable ctx (Var "p"))
+
+test_implicationTautology :: Assertion
+test_implicationTautology =
+  let f = Implies (Var "p") (Var "p")
+  in assertEqual "p \x2192 p" True (provable emptyContext f)
+
+test_equivalenceTautology :: Assertion
+test_equivalenceTautology =
+  let f = Equivalent (Var "p") (Var "p")
+  in assertEqual "p \x2194 p" True (provable emptyContext f)
+
+tests =
+  [ testGroup "Unit tests" unitTests
+  , testGroup "Provable unit tests" provableUnitTests
+  ]
