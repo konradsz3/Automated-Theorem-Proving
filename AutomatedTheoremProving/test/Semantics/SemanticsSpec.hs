@@ -214,9 +214,32 @@ test_qed =
        (Right emptyContext)
        (runEval stmt emptyContext)
 
+programUnitTest =
+  [ testCase "simple proof test" test_evalprogram_simple
+  ]
+
+test_evalprogram_simple :: Assertion
+test_evalprogram_simple =
+  let contrapos = Equivalent
+                    (Implies (Var "P") (Var "Q"))
+                    (Implies (Not (Var "Q")) (Not (Var "P")))
+      prog = Program
+        [ Axiom "contrapositive" contrapos
+        , Theorem "simple_implication"
+            (Implies (Var "P")
+              (Implies (Var "Q")
+                (Implies (Not (Var "Q")) (Not (Var "P")))))
+        , Given (Implies (Var "P") (Var "Q"))
+        , Apply "contrapositive" [Implies (Var "P") (Var "Q")]
+        , Qed
+        ]
+  in assertEqual "Simple proof using contrapositive"
+       (Right ())
+       (evalProgram prog)
 
 tests =
   [ testGroup "Unit tests" unitTests
   , testGroup "Provable unit tests" provableUnitTests
   , testGroup "Unit tests for evalStatement" statementUnitTests
+  , testGroup "Eval Program Unit Test" programUnitTest
   ]
