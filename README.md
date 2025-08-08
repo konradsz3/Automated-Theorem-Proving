@@ -9,6 +9,10 @@ Adam Dęby:
 - genName
 - prop_axiomWithName
 - prop_applyWithName
+***********************
+- semantics
+- statementUnitTests 
+
 
 Aleksandra Klemczak:
 - instance Show Formula,
