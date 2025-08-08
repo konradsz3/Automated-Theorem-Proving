@@ -125,11 +125,6 @@ test_equivalenceTautology =
   let f = Equivalent (Var "p") (Var "p")
   in assertEqual "p \x2194 p" True (provable emptyContext f)
 
-tests =
-  [ testGroup "Unit tests" unitTests
-  , testGroup "Provable unit tests" provableUnitTests
-  ]
-
 
 statementUnitTests =
   [ testCase "Axiom adds to context" test_axiom
@@ -219,7 +214,9 @@ test_qed =
        (Right emptyContext)
        (runEval stmt emptyContext)
 
+
 tests =
-    [ testGroup "Unit tests" unitTests
-    , testGroup "Unit tests for evalStatement" statementUnitTests
-    ]
+  [ testGroup "Unit tests" unitTests
+  , testGroup "Provable unit tests" provableUnitTests
+  , testGroup "Unit tests for evalStatement" statementUnitTests
+  ]
