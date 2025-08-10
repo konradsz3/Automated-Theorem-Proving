@@ -31,12 +31,6 @@ unitTests = [testCase "Evaluate true variable" test_evalvar1
             , testCase "Evaluate false equivalent statement" test_evaleq2
             ]
 
-
--- semanticsTest :: String -> Program -> Assertion 
--- semanticsTest input program = case evalProgram program of 
---     Left err -> assertFailure $ "Evaluation failed: " ++ err 
---     Right result -> assertEqual ("Evaluating: " ++ input) expected result
-
 exampleEnv :: [(String, Bool)]
 exampleEnv = [("X", True), ("Y", False)]
 
