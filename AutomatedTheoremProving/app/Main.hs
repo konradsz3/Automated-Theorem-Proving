@@ -6,6 +6,12 @@ import System.Environment (getArgs)
 import System.IO (readFile)
 import Text.Parsec.Error (ParseError)
 import Parser 
+import Semantic
+import Data.Maybe (fromMaybe)
+import Data.List (find)
+import Control.Monad
+import Control.Monad.State
+import qualified Data.Map as Map
 
 -- | Main function to parse a file
 main :: IO ()
@@ -35,3 +41,21 @@ parseAndPrint input = do
   case parseProgram input of
     Left err -> print err
     Right ast -> print ast
+
+
+---------
+exampleContext :: Context
+exampleContext = Context (Map.fromList
+    [ ("contrapositive", Implies (Var "P") (Var "Q")) ])
+    [Implies (Var "P") (Var "Q")] []
+
+
+-- Example proof evaluation
+exampleProof :: Program
+exampleProof = Program
+    [ Axiom "contrapositive" (Implies (Var "P") (Var "Q"))
+    , Theorem "simple_implication" (Implies (Var "P") (Var "Q"))
+    , Given (Implies (Var "P") (Var "Q"))
+    , Apply "contrapositive" [Implies (Var "P") (Var "Q")]
+    , Qed
+    ]
