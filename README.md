@@ -46,3 +46,6 @@ Konrad Szymański:
 - test_invalidSyntax
 - test_ATPSnippet
 - proofStmt, test_proof
+***********************
+- semantics
+- Unit test evalFormula
